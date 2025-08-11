@@ -1,0 +1,10 @@
+12d091f7f1fbb05d9232ba715ea20336  usr/bin/memusage
+390bfb1129e45456e517c2701ae0b31d  usr/bin/memusagestat
+656101ab4d7eca20ac01e02163d103a9  usr/bin/mtrace
+08b10e5581f97f392a035454dee0b947  usr/bin/sotruss
+1df3d05345d8aa7e07c90488b95691fa  usr/bin/sprof
+7a7f71a4ddbd19ccebdbf7b3434eed52  usr/share/doc/libc-devtools/changelog.Debian.gz
+48d68260ab7331ccff4ff77677d7607d  usr/share/doc/libc-devtools/changelog.gz
+d848be5c37cd71d76c5a7b9e7e28868a  usr/share/doc/libc-devtools/copyright
+786743655bbb6605ea26107bfe9c2d61  usr/share/lintian/overrides/libc-devtools
+5bcb4efe618ed89d610edcd6c26aa159  usr/share/man/man1/sotruss.1.gz
