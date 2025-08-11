@@ -97,9 +97,13 @@ with main_col:
     st.markdown(f"**Using Input Directory:** `{input_dir_choice}`")
 
     policy = st.selectbox("Select Scheduling Policy", POLICIES)
-    gpu_sel = st.selectbox("GPU Selection", GPU_MODES)
-    dimext = st.selectbox("Dimension Extension", DIMEXT_MODES)
-    norm = st.selectbox("Normalization", NORM_MODES)
+    gpu_sel = st.selectbox("GPU Selection", GPU_MODES, disabled=policy == "RlSched")
+    dimext = st.selectbox("Dimension Extension", DIMEXT_MODES, disabled=policy == "RlSched")
+    norm = st.selectbox("Normalization", NORM_MODES, disabled=policy == "RlSched")
+    if policy == "RlSched":
+        gpu_sel = "<none>"
+        dimext = "<none>"
+        norm = "<none>"
 
     rl_endpoint = ""
     rl_timeout = 0

@@ -1,8 +1,12 @@
 package plugin
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"math"
+	"net/http"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -29,6 +33,17 @@ type RLSchedulerScoreArgs struct {
 type RLSchedulerScorePlugin struct {
 	handle framework.Handle
 	args   *RLSchedulerScoreArgs
+}
+
+type rlRequest struct {
+	PodName  string  `json:"pod"`
+	NodeName string  `json:"node"`
+	CpuRatio float64 `json:"cpu_ratio"`
+	GpuRatio float64 `json:"gpu_ratio"`
+}
+
+type rlResponse struct {
+	Score float64 `json:"score"`
 }
 
 var _ framework.ScorePlugin = &RLSchedulerScorePlugin{}
@@ -84,6 +99,31 @@ func (plugin *RLSchedulerScorePlugin) Score(ctx context.Context, state *framewor
 			gpuRatio = 0
 		}
 		gpuRatio = math.Max(0, math.Min(1, gpuRatio))
+	}
+
+	if plugin.args.RlEndpoint != "" {
+		req := rlRequest{PodName: pod.GetName(), NodeName: nodeName, CpuRatio: cpuRatio, GpuRatio: gpuRatio}
+		body, err := json.Marshal(req)
+		if err == nil {
+			timeout := time.Duration(plugin.args.RlTimeout) * time.Millisecond
+			client := &http.Client{}
+			if timeout > 0 {
+				client.Timeout = timeout
+			}
+			httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, plugin.args.RlEndpoint, bytes.NewReader(body))
+			if err == nil {
+				httpReq.Header.Set("Content-Type", "application/json")
+				resp, err := client.Do(httpReq)
+				if err == nil {
+					defer resp.Body.Close()
+					var rResp rlResponse
+					if err := json.NewDecoder(resp.Body).Decode(&rResp); err == nil {
+						rlScore := math.Max(0, math.Min(1, rResp.Score))
+						return int64(rlScore * float64(framework.MaxNodeScore)), framework.NewStatus(framework.Success)
+					}
+				}
+			}
+		}
 	}
 
 	score := cpuRatio*plugin.args.CpuWeight + gpuRatio*plugin.args.GpuWeight

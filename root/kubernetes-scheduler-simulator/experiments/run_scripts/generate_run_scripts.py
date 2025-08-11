@@ -5,6 +5,8 @@
 DATE = "2023_0511" # Used as the folder name under experiments/ to hold all log results. To avoid collision of repeated experiments, may change date or append _v1, _v2, etc.
 REMARK = "Artifacts"
 REPEAT =10 # Number of repetitive experiments.
+RL_ENDPOINT = "http://127.0.0.1:5000"  # Endpoint for external RL scheduler
+RL_TIMEOUT_MS = 0  # Optional timeout value passed to the RL scheduler
 FILELIST = [
     #: Main results in Fig. 7 and 9
     "data/openb_pod_list_default",
@@ -37,6 +39,7 @@ AllMethodList = [
     ["04", "GpuPacking", "<none>", "<none>", "<none>"],
     ["05", "BestFit", "<none>", "<none>", "<none>"],
     ["06", "FGD", "<self>", "share", "max"],
+    ["07", "RlSched", "<none>", "<none>", "<none>"],
 ]
 
 AllMethodDict = {}
@@ -56,6 +59,7 @@ MethodList = [
     ["04", "GpuPacking", "<none>", "<none>", "<none>"],
     ["05", "BestFit", "<none>", "<none>", "<none>"],
     ["06", "FGD", "<self>", "share", "max"],
+    ["07", "RlSched", "<none>", "<none>", "<none>"],
 ]
 
 def get_dir_name_from_method(method_input):
@@ -111,6 +115,9 @@ def generate_run_scripts(asyncc=True, parallel=16):
                     outstr += '-gpusel %s ' % gsm if gsm != "<none>" else ''
                     outstr += '-dimext %s ' % dem if dem != "<none>" else ''
                     outstr += '-norm %s ' % nm if nm != "<none>" else ''
+                    if policy == "RlSched":
+                        outstr += '--rl-endpoint %s ' % RL_ENDPOINT if RL_ENDPOINT else ''
+                        outstr += '--rl-timeout-ms %s ' % RL_TIMEOUT_MS if RL_TIMEOUT_MS else ''
                     outstr += '-tune %s ' % tune_ratio if tune_ratio else ''
                     outstr += '-tuneseed %s ' % tune_seed if tune_seed else ''
                     outstr += "--shuffle-pod=true " if SHUFFLE_POD else ""
